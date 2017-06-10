@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy
 import tkinter as tk
 import tensorflow
@@ -15,8 +17,9 @@ class App(tk.Tk):
         self.height = self.rows * self.cell_height
         self.grid = numpy.zeros([28, 28])
 
-        # Creates the tk windor and canvas
+        # Creates the tk window and canvas
         tk.Tk.__init__(self, *args, **kwargs)
+        self.title('Draw your digit')
         self.canvas = tk.Canvas(self, width=self.width, height=self.height,
                                 borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
@@ -44,6 +47,16 @@ class App(tk.Tk):
 
         # Creates the application logger
         self.configure_logger()
+
+        # Creates the additional prediction window
+        self.prediction_window = PredictionWindow()
+
+        # Makes <ESC> key the close app event
+        self.bind('<Escape>', lambda x: self.destroy())
+
+    def destroy(self):
+        self.prediction_window.destroy()
+        super().destroy()
 
     def configure_logger(self):
         """ Helper function to create a default logger. """
@@ -92,6 +105,7 @@ class App(tk.Tk):
         output = self.tensorflow_session.run(self.predict, feed_dict)
         predicted_digit = numpy.argmax(output)
         self.logger.info('Predicted digit: {}'.format(predicted_digit))
+        self.prediction_window.prediction_label.config(text=predicted_digit)
 
         # Clear the grid, both, visually and in the array.
         for column in range(self.rows):
@@ -122,6 +136,20 @@ class App(tk.Tk):
         self.grid[row, col] = 1
 
 
-if __name__ == "__main__":
+class PredictionWindow(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        # Creates the tk prediction window
+        tk.Tk.__init__(self, *args, **kwargs)
+        self.title('Digit predicted')
+
+        self.prediction_label = tk.Label(self, text='', width=1, font=("Courier", 64))
+        self.prediction_label.pack()
+
+
+def main():
     app = App(rows=28, cols=28)
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()
