@@ -14,7 +14,6 @@ mnist_data = input_data.read_data_sets("MNIST_data/", one_hot=True)
 learning_rate = 0.001
 training_epochs = 15
 batch_size = 100
-display_step = 1
 
 # Construct the graph
 # First layer
@@ -60,8 +59,7 @@ with tensorflow.Session() as session:
 
             session.run(train_step, feed_dict={input: batch_x, real_y: batch_y})
 
-        if epoch % display_step == 0:
-            print('Epoch {}'.format(epoch))
+        print('Epoch {}'.format(epoch))
 
     correct_prediction = tensorflow.equal(tensorflow.argmax(y, 1), tensorflow.argmax(real_y, 1))
     accuracy = tensorflow.reduce_mean(tensorflow.cast(correct_prediction, tensorflow.float32))
