@@ -2,13 +2,13 @@
 
 Last time I talked about TensorFlow basics and as an example I used a small neural network using a single layer with no real testing. This time I want to try something a little bit more graphical and bigger, a neural network with 3 layers and a simple interface to draw some numbers for it to classify.
 
-First I am going to talk about how we can structure our code to fit this new testing UI, this will require us to talk about how to save and load models in TensorFlow. Finally, I will go through this time's MNIST model, it will use 3 layers (as opposed to just one) and some enhancements for trainning.
+First, I am going to talk about how we can structure our code to fit this new testing UI, this will require us to talk about how to save and load models in TensorFlow. Finally, I will go through this time's MNIST model, it will use 3 layers (as opposed to just one) and some enhancements for trainning.
 
 ## MNIST UI
 
-The reason behind this UI is to be able to test our MNIST trained model. Last time the script only show the accuracy prediction, but we couldn't actually draw numbers on the screen, so we had to believe that it was over 90% correct.
+The reason behind this UI is to be able to test our MNIST trained model. Last time the script only showed the accuracy prediction, but we couldn't actually draw numbers on the screen, so we had to believe that it was over 90% correct.
 
-How this all fits in a TensorFlow model? Well, usually you train your model and when you achieve a good-enough accuracy rate you save your model, then in whatever application, web app or mobile app you need to use that model, you just load the saved file. This is how MNIST interface is going to be used, we are going to train our model, as we previously did, then save it. Later, MNIST UI will load that model and run predictions on it.
+How this all fits in a TensorFlow model? Well, usually you train your model and when you achieve a good-enough accuracy rate you save your model, then in whatever application, web app or mobile app, you need to use that model, you load the saved file. This is how MNIST interface is going to be used, we are going to train our model (as we previously did) then save it. Later, MNIST UI will load that model and run predictions on it.
 
 The UI comprises of 2 windows. One is a window with a 28x28 grid, which is the right size for our input samples. The second window is no other than a label showing which number the model predicts our drawed number is.
 
@@ -33,7 +33,7 @@ TensorFlow has built-in functions to save and load models. Remember the graph Te
 
 ### Saving a model
 
-A saved model will store the graph itself along side the weights and functions. This functions can be really any of the many TensorFlow operations we declared. In our case we just need a way to input data and call the prediction.
+A saved model will store the graph itself along side the weights and operations. These operations can be any of the many TensorFlow operations we have declared. In our case we just need a way to input data and call the prediction.
 
 All TensorFlow operations and variables have a keyword argument `name` to identify them inside the graph. It is enough to mark our input placeholder and our prediction function with a `input` and `predict` labels.
 
