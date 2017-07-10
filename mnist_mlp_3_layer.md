@@ -2,7 +2,7 @@
 
 Last time I talked about TensorFlow basics and as an example I used a small neural network using a single layer with no real testing. This time I want to try something a little bit more graphical and bigger, a neural network with 3 layers and a simple interface to draw some numbers for it to classify.
 
-First, I am going to talk about how we can structure our code to fit this new testing UI, this will require us to talk about how to save and load models in TensorFlow. Finally, I will go through this time's MNIST model, it will use 3 layers (as opposed to just one) and some enhancements for trainning.
+First, I am going to talk about how we can structure our code to fit this new testing UI, this will require us to talk about how to save and load models in TensorFlow. Finally, I will go through this time's MNIST model, it will use 3 layers (as opposed to just one) and some enhancements for training.
 
 ## MNIST UI
 
@@ -10,9 +10,9 @@ The reason behind this UI is to be able to test our MNIST trained model. Last ti
 
 How this all fits in a TensorFlow model? Well, usually you train your model and when you achieve a good-enough accuracy rate you save your model, then in whatever application, web app or mobile app, you need to use that model, you load the saved file. This is how MNIST interface is going to be used, we are going to train our model (as we previously did) then save it. Later, MNIST UI will load that model and run predictions on it.
 
-The UI comprises of 2 windows. One is a window with a 28x28 grid, which is the right size for our input samples. The second window is no other than a label showing which number the model predicts our drawed number is.
+The UI is comprised of 2 windows. One is a window with a 28x28 grid, which is the right size for our input samples. The second window is no other than a label showing which number the model predicts our drawn number is.
 
-**Put screenshots here**
+![MNIST-UI](images/mnist-ui.png)
 
 The code uses Python's TKinter, which is the easiest framework to use inside Python (some distributions have Tkinter already installed). It has only been tested on `macOS`, but since it's Python, it should be ready to be used on `Linux` and `Windows` as well. I am not going to give a detailed version of how all the code works, but this is a short resume of what is happening on the inside:
 
@@ -21,9 +21,9 @@ The code uses Python's TKinter, which is the easiest framework to use inside Pyt
 3. You draw a number in the grid while you keep the mouse button pressed.
 4. When you release the button the grid will convert this 2d grid into a 1d array.
 5. The 1d array is input into the model and returns a predicted class.
-6. The predicted number is showned at the other window.
+6. The predicted number is showed at the other window.
 
-This code can be reused with any MNIST model, as long as the model is saved with the name `mnist_trained.meta`. Be aware that MNIST dataset is a collection of grayscale digitized numbers, while this code creates a 28x28 black and white grid, so it's not quite the same and results may not reflect the actual model accuracy, but it's enough for quick testing of your model.
+This code can be reused with any MNIST model, as long as the model is saved with the name `mnist_trained.meta`. Be aware that MNIST dataset is a collection of gray-scale digitized numbers, while this code creates a 28x28 black and white grid, so it's not quite the same and results may not reflect the actual model accuracy, but it's enough for quick testing of your model.
 
 All this code is inside the `main.py` file. You just run it and you will see the UI, but before we need to have a trained model ready to be loaded.
 
@@ -66,7 +66,7 @@ The main file we are going to work with is the `mnist_trained.meta`, as this con
 
 On the `main.py` file, on function `load_model()` you can see that we are going to create a TensorFlow session. Then we are going to import the meta graph using the path to the model, in this case is the same working directory `.`, then we restore the checkpoint.
 
-TensorFlow gives you the opportunity to save checkpoints, so that you can work with your model across time. You could potentially create a checkpoint every x epochs and see how it progresses over time, for the sake of this example we just have one checkpoint, so we load the latest checkpoint. Finally, we need to load our variables, this so we can work in the data from the UI, make predictions and of course, let TensorFlow know which graph to use.
+TensorFlow gives you the opportunity to save checkpoints, so that you can work with your model across time. You could potentially create a checkpoint every x epochs and see how it progresses over time, for the sake of this example we just have one checkpoint, so we load the latest checkpoint. Finally, we need to load our variables so we make predictions.
 
 ```python
 def load_model(self, model_path, latest_checkpoint='./'):
@@ -98,15 +98,15 @@ The `:0` appended at the end of the name of the tensor/variable/function needs t
 
 Now, you can run the `mnist_mlp.py` file, it will train the same way the old code did, but this time you should see a bunch of `mnist_trained.*` files along side a `checkpoint` file. After that, you can launch `main.py`, you will see the grid, and you will be able to draw and predict a number.
 
-**Insert screenshot of UI working**
+![MNIST-PREDICTION](images/mnist-prediction.png)
 
 ## 3-layer MLP for MNIST
 
-Last time the neural network used was a single-layered network. This time I want to try with a 3-layered one. This code is inside the `mnist_mlp_3_layer.py` file.
+Last time the neural network used was a single-layered network. Now, I want to try a 3-layered one. This code is inside the `mnist_mlp_3_layer.py` file.
 
 Traditionally, neural networks have 3 layers: input layer, hidden layer and output layer.
 
-**Insert image of a 3 layer net**
+![MNIST-ANN](images/mnist-ann.png)
 
 The script starts the same, importing the TensorFlow library along side the MNIST data set.
 
@@ -137,7 +137,7 @@ In this case we want to define 3 layers:
 
 - Input layer: Receives the input directly.
 - Hidden layer: Receives input from the previous layer.
-- Output layer: Recieves input from the hidden layer and then outputs the likehood for a given number between 0-9.
+- Output layer: Receives input from the hidden layer and then outputs the likehood for a given number between 0-9.
 
 ```python
 # First layer
@@ -163,7 +163,7 @@ output = tensorflow.nn.softmax(y, name='predict')
 real_y = tensorflow.placeholder(tensorflow.float32, [None, 10])
 ```
 
-The first layer is going to be a 784 input array, remember that the `None` in that placeholder means that we don't know yet how many 784 1d-array we are going to input at any given moment. Instead of having a weight matrix of 784x10, we are now going to use a 784x256 matrix, this will reduce the dimensionality of the previous layer, but will allow the network to keep extracting features in the next layer. We also set the name to `input`, which will come in handy when we test this using our UI.
+The first layer is going to be a 784 input array, remember that the `None` in that placeholder means that we don't know yet how many 784-array we are going to input at any given moment. Instead of having a weight matrix of 784x10, we are now going to use a 784x256 matrix, this will reduce the dimensionality of the previous layer, but will allow the network to keep extracting features in the next layer. We also set the name to `input`, which will come in handy when we test this using our UI.
 
 The second layer is going to be a 256x256 matrix, there is not much else to it.
 
@@ -175,11 +175,11 @@ Remember to set the `real_y` placeholder, this is going to be used at training t
 
 Notice that this time we have 2 types of activation functions, softmax and relu. ReLU (Rectified Linear Unit) is defined as:
 
-**Insert RELU formula**
+> f(x) = max(0, x)
 
-ReLU is regarded as the optimal activation function due to the quick and cheap derivate when using backpropagation. It is also a non-linear function, so while still quickly derivated and simple, it works quite well for the non-linearity needed on the network. As a general rule, this is the state-of-the-art activation function at the moment.
+ReLU is regarded as the optimal activation function due to the quick and cheap derivate when using backpropagation. It is also a non-linear function, so while still simple and quickly to derivate, it works quite well adding the non-linearity needed on the network. As a general rule, this is the state-of-the-art activation function at the moment.
 
-What about the last softmax function? Remember that our output is the probability of a given input to be classified as one of the 0-9 digits. Softmax function takes the intrinsict relationship between these classes to output a range of probabilities that ultimately add to 1. You can see the softmax function as a probability distribution of classes. This, obviously, is something we don't need in the input or hidden layers.
+What about the last softmax function? Remember that our output is the probability of a given input to be classified as one of the 0-9 digits. Softmax function takes the intrinsic relationship between these classes to output a range of probabilities that ultimately adds to 1. You can see the softmax function as a probability distribution of classes. This, obviously, is something we don't need for the input or hidden layers.
 
 Notice also that we used `tensorflow.random_normal` function this time, as opposed to `tensorflow.zeros` function. When a network scales, we need to be careful about initialization. Having a network start at 0 creates a sort of bias, making it difficult for the network to scape local minima, thus not optimizing correctly, this is somewhat overcome by initializing the weights to some small random numbers.
 
@@ -198,7 +198,7 @@ train_step = optimizer.minimize(cost)
 
 Notice we didn't use the `output` tensor for the loss function, this is due to the `softmax_cross_entropy_with_logits` function, which already calculates that, it only needs the "plain" output from the last layer.
 
-This time we are going to use `AdamOptimizer`, long story short...it is considered the best optimizer at the moment. There is a lot of theory behind it, but just trust me this time. The learning rate was defined in the `parameters` section, you can easily change this to test how this affects the network, but you don't want it to be bigger than 1, but you do want it to be bigger than 0, for sure.
+This time we are going to use `AdamOptimizer`, long story short...it is considered the best optimizer at the moment. There is a lot of theory behind it, but just trust me this time. The learning rate was defined in the `parameters` section, you can easily change this to test how this affects the network, but you don't want it to be bigger than 1, for sure.
 
 ### Training
 
@@ -234,15 +234,15 @@ with tensorflow.Session() as session:
 
 First, we initialize our variables with the `global_variables_initializer`, then we create a TensorFlow session and run the `init` operation.
 
-For each epoch we are going to calculate how many samples we want by batch, we don't want to give the whole training set to the network at once. For each bath we grab the amount of samples we need and run the `train_step` over that data.
+For each epoch we are going to calculate how many samples we want per batch, we don't want to give the whole training set to the network at once, in larger datasets we could run out of memory. For each batch we grab the amount of samples we need and run the `train_step` over the data.
 
-Now, we have trained define, the rest of the code is fairly similar to last time's example. After all the epochs we can use the MNIST `test` data set to calculate the networks accuracy.
+The rest of the code is fairly similar to last time's example. After all the epochs have run, we can use the MNIST `test` data set to calculate the network's accuracy.
 
 Finally, we want to save this model, so we can use it on our UI data.
 
 ### Results
 
-Last time our MLP was around `91%` of accuracy, since we are using a more complex network and training method (due to the implementation epochs), we are hoping to have a better accuracy percentage, and it delivers.
+Last time our MLP was around `91%` of accuracy, since we are using a more complex network and training method (due to the implementation epochs), we are hoping to have better accuracy, and it delivers.
 
 ```python
 Epoch 14
@@ -250,7 +250,7 @@ The final accuracy over the MNIST data is 94.34%
 Saving model...
 ```
 
-And this is just after 15 epochs, if you ran the script for 500 epochs we can actually achieve over `97%` accuracy. Be warned, 15 epochs took around 1 minute on my quad-core Core i7, while the 500 epochs took 30 minutes, big difference!
+And this is just after 15 epochs, if you ran the script for 500 epochs we can actually achieve over `97%` accuracy. Be warned, 15 epochs took around 1 minute on my quad-core CPU, while the 500 epochs took 30 minutes, big difference!
 
 ```python
 Epoch 499
@@ -262,9 +262,9 @@ Saving model...
 
 If you got your `mnist_trained*` documents, then you just need to run `main.py` and start drawing some numbers.
 
-**insert examples here**
+![MNIST-WRONG](images/mnist-wrong.png)
 
-Some numbers, even though are clear for you, they are not clear for the network, this could be due to the black and white grid we are using on the UI. The network was trained on grayscale images, so similar but yet different data sets.
+Apparently that last image looks like a 3 for the network...
 
 # Conclusion
 
