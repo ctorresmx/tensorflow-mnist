@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+import tensorflow as tf
+import numpy as np
+from tensorflow.examples.tutorials.mnist import input_data
+
+#  Load the MNIST data set
+mnist_data = input_data.read_data_sets("MNIST_data/", one_hot=True)
+
+# Parameters
+EPOCHS = 10
+BATCH_SIZE = 100
+
+
+def conv_layer(input, weight_shape, bias_shape):
+    conv_weights = tf.Variable(tf.truncated_normal(weight_shape, stddev=0.1))
+    conv_biases = tf.Variable(tf.zeros(bias_shape))
+
+    conv = tf.nn.conv2d(input, conv_weights, strides=[1, 1, 1, 1],
+                        padding='SAME')
+
+    return tf.nn.relu(tf.nn.bias_add(conv, conv_biases))
+
+
+def pool_layer(input):
+    return tf.nn.max_pool(input, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
+                          padding='SAME')
+
+
+def fc_layer(input, weight_shape, bias_shape):
+    fc_weights = tf.Variable(tf.truncated_normal(weight_shape, stddev=0.1))
+    fc_biases = tf.Variable(tf.constant(0.1, shape=bias_shape))
+
+    return tf.nn.relu(tf.matmul(input, fc_weights) + fc_biases)
+
+
+def model(input, dropout_rate=1.0):
+    conv_layer_1 = conv_layer(input, [5, 5, 1, 32], [32])
+    max_pool_layer_1 = pool_layer(conv_layer_1)
+
+    conv_layer_2 = conv_layer(max_pool_layer_1, [5, 5, 32, 64], [64])
+    max_pool_layer_2 = pool_layer(conv_layer_2)
+
+    reshape = tf.reshape(max_pool_layer_2, [-1, 49 * 64])
+    hidden = fc_layer(reshape, [49 * 64, 512], [512])
+
+    dropout = tf.nn.dropout(hidden, dropout_rate)
+
+    return fc_layer(dropout, [512, 10], [10])
+
+x = tf.placeholder(tf.float32, shape=[None, 28, 28, 1])
+real_y = tf.placeholder(tf.float32, shape=[None, 10])
+logits = model(x, 0.5)
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=real_y,
+                                                              logits=logits))
+optimizer = tf.train.AdamOptimizer().minimize(loss)
+
+with tf.Session() as session:
+    tf.global_variables_initializer().run()
+
+    for epoch in range(EPOCHS):
+        total_batch = int(mnist_data.train.num_examples / BATCH_SIZE)
+
+        for i in range(total_batch):
+            batch_x, batch_y = mnist_data.train.next_batch(BATCH_SIZE)
+
+            feed_dict = {
+                x: np.reshape(batch_x, (-1, 28, 28, 1)),
+                real_y: batch_y
+            }
+
+            session.run(optimizer, feed_dict=feed_dict)
+
+        print('Epoch {}'.format(epoch))
+
+    correct_prediction = tf.equal(tf.argmax(tf.nn.softmax(logits), 1),
+                                  tf.argmax(real_y, 1))
+
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    feed_dict = { 
+        x: np.reshape(mnist_data.test.images, (-1, 28, 28, 1)),
+        real_y: mnist_data.test.labels
+    }
+    network_accuracy = session.run(accuracy, feed_dict=feed_dict)
+
+    print('The final accuracy over the MNIST data is\
+          {:2f}%'.format(network_accuracy * 100))
+
