@@ -8,7 +8,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist_data = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
-EPOCHS = 10
+EPOCHS = 1
 BATCH_SIZE = 100
 
 
@@ -61,6 +61,23 @@ def model(input, dropout_rate=1.0):
     return output
 
 
+def eval_in_batches(x, real_y):
+    test_logits = model(x)
+    correct_prediction = tf.equal(tf.argmax(tf.nn.softmax(test_logits), 1),
+                                  tf.argmax(real_y, 1))
+
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    feed_dict = {
+        x: np.reshape(mnist_data.test.images[:5000], (-1, 28, 28, 1)),
+        real_y: mnist_data.test.labels[:5000]
+    }
+
+    network_accuracy = session.run(accuracy, feed_dict=feed_dict)
+
+    return network_accuracy
+
+
 with tf.variable_scope("shared_variables") as scope:
     x = tf.placeholder(tf.float32, shape=[None, 28, 28, 1])
     real_y = tf.placeholder(tf.float32, shape=[None, 10])
@@ -88,17 +105,7 @@ with tf.variable_scope("shared_variables") as scope:
             print('Epoch {}'.format(epoch))
 
         scope.reuse_variables()
-        test_logits = model(x)
-        correct_prediction = tf.equal(tf.argmax(tf.nn.softmax(test_logits), 1),
-                                      tf.argmax(real_y, 1))
-
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-        feed_dict = {
-            x: np.reshape(mnist_data.test.images[:5000], (-1, 28, 28, 1)),
-            real_y: mnist_data.test.labels[:5000]
-        }
-        network_accuracy = session.run(accuracy, feed_dict=feed_dict)
+        network_accuracy = eval_in_batches(x, real_y)
 
         print('The final accuracy over the MNIST data is {:2f}%'.format(network_accuracy * 100))
 
