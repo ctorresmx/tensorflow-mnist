@@ -8,7 +8,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist_data = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # Parameters
-EPOCHS = 1
+EPOCHS = 10
 BATCH_SIZE = 100
 
 
@@ -68,14 +68,20 @@ def eval_in_batches(x, real_y):
 
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-    feed_dict = {
-        x: np.reshape(mnist_data.test.images[:5000], (-1, 28, 28, 1)),
-        real_y: mnist_data.test.labels[:5000]
-    }
+    total_batch = int(mnist_data.test.num_examples / BATCH_SIZE)
 
-    network_accuracy = session.run(accuracy, feed_dict=feed_dict)
+    network_accuracy_total = 0
+    for i in range(total_batch):
+        batch_x, batch_y = mnist_data.test.next_batch(BATCH_SIZE)
 
-    return network_accuracy
+        feed_dict = {
+            x: np.reshape(batch_x, (-1, 28, 28, 1)),
+            real_y: batch_y
+        }
+
+        network_accuracy_total += session.run(accuracy, feed_dict=feed_dict)
+
+    return network_accuracy_total / total_batch
 
 
 with tf.variable_scope("shared_variables") as scope:
@@ -108,4 +114,8 @@ with tf.variable_scope("shared_variables") as scope:
         network_accuracy = eval_in_batches(x, real_y)
 
         print('The final accuracy over the MNIST data is {:2f}%'.format(network_accuracy * 100))
+
+        print('Saving model...')
+        saver = tf.train.Saver()
+        saver.save(session, 'mnist_trained')
 
